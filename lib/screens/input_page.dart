@@ -1,8 +1,12 @@
 import "package:flutter/material.dart";
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'reuse_card.dart';
-import 'icon_content.dart';
-import "constants.dart";
+import '../components/reuse_card.dart';
+import '../components/icon_content.dart';
+import "../constants.dart";
+import 'package:rflutter_alert/rflutter_alert.dart';
+import "../components/bottom_button.dart";
+import "../components/round_icon_button.dart";
+import "package:bmi_calculator_flutter/calculator_brain.dart";
 
 enum Gender { male, female }
 
@@ -15,9 +19,9 @@ class InputPage extends StatefulWidget {
 
 class InputPageState extends State<InputPage> {
   Gender? sexSelect;
-  int height = 0;
-  int weight = 0;
-  int age = 0;
+  int height = 100;
+  int weight = 50;
+  int age = 25;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +31,6 @@ class InputPageState extends State<InputPage> {
         title: const Text('BMI CALCULATOR'),
       ),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
             child: Row(
@@ -89,12 +92,12 @@ class InputPageState extends State<InputPage> {
                       ),
                       SliderTheme(
                         data: SliderTheme.of(context).copyWith(
-                            thumbShape:
-                                RoundSliderThumbShape(enabledThumbRadius: 15.0),
-                            thumbColor: Color(0xFFEB1555),
-                            overlayColor: Color(0x29EB1555),
+                            thumbShape: const RoundSliderThumbShape(
+                                enabledThumbRadius: 15.0),
+                            thumbColor: const Color(0xFFEB1555),
+                            overlayColor: const Color(0x29EB1555),
                             activeTrackColor: Colors.white,
-                            inactiveTrackColor: Color(0xFF8D8E98)),
+                            inactiveTrackColor: const Color(0xFF8D8E98)),
                         child: Slider(
                           value: height.toDouble(),
                           min: 0,
@@ -126,40 +129,105 @@ class InputPageState extends State<InputPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          FloatingActionButton(
-                            backgroundColor: Color(0xFF4C4F5E),
-                            onPressed: () {},
-                            child: Icon(
-                              Icons.add,
-                              color: Colors.white,
-                            ),
+                          RoundIconButton(
+                            icon: FontAwesomeIcons.minus,
+                            onPress: () {
+                              setState(() {
+                                if (weight > 0) {
+                                  weight--;
+                                }
+                              });
+                            },
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 10.0,
                           ),
-                          FloatingActionButton(
-                            backgroundColor: Color(0xFF4C4F5E),
-                            onPressed: () {},
-                            child: Icon(
-                              Icons.add,
-                              color: Colors.white,
-                            ),
+                          RoundIconButton(
+                            icon: FontAwesomeIcons.plus,
+                            onPress: () {
+                              setState(() {
+                                if (weight < 300) {
+                                  weight++;
+                                }
+                              });
+                            },
                           ),
                         ],
                       )
                     ],
                   ),
                 )),
-                Expanded(child: ReuseCard(cardColor: kActiveCardColor)),
+                Expanded(
+                    child: ReuseCard(
+                  cardColor: kActiveCardColor,
+                  cardChild: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "AGE",
+                        style: kLabelTextStyle,
+                      ),
+                      Text(
+                        age.toString(),
+                        style: kNumberTextStyle,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          RoundIconButton(
+                            icon: FontAwesomeIcons.minus,
+                            onPress: () {
+                              setState(() {
+                                if (age > 0) {
+                                  age--;
+                                }
+                              });
+                            },
+                          ),
+                          const SizedBox(
+                            width: 10.0,
+                          ),
+                          RoundIconButton(
+                            icon: FontAwesomeIcons.plus,
+                            onPress: () {
+                              setState(() {
+                                if (age < 300) {
+                                  age++;
+                                }
+                              });
+                            },
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                )),
               ],
             ),
           ),
-          Container(
-            margin: const EdgeInsets.only(top: 10.0),
-            color: kBottomContainerColor,
-            width: double.infinity,
-            height: kBottomContainerHeight,
-          )
+          BottomButton(
+            label: "CALCULATE",
+            onTap: () {
+              CalculatorBrain cal = CalculatorBrain(weight, height);
+              if (sexSelect == null) {
+                Alert(
+                        style: const AlertStyle(
+                          titleStyle: TextStyle(color: Colors.white),
+                          descStyle: TextStyle(color: Colors.white),
+                        ),
+                        context: context,
+                        title: "ERROR",
+                        desc: "Please select gender.")
+                    .show();
+              } else {
+                Navigator.pushNamed(context, "result", arguments: {
+                  'bmiResult': cal.getResult(),
+                  "bmiNumber": cal.calculateBMI(),
+                  "bmiDescription": cal.getDescription()
+                });
+              }
+            },
+          ),
         ],
       ),
     );
